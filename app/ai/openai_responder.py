@@ -1,0 +1,21 @@
+from openai import OpenAI
+from app.infra.environment import OPENAI_API_KEY
+from app.ai.prompts import SYSTEM_PROMPT
+
+class OpenAIResponder:
+    def __init__(self):
+        self.client = OpenAI(api_key=OPENAI_API_KEY)
+        self.system_prompt = SYSTEM_PROMPT
+
+    def get_response(self, user_message: str) -> str:
+        response = self.client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": self.system_prompt},
+                {"role": "user", "content": user_message}
+            ],
+            temperature=0.4,
+            max_tokens=300
+        )
+
+        return response.choices[0].message.content
