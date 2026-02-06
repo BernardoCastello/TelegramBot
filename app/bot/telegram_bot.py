@@ -11,9 +11,10 @@ from app.bot.command_handlers import CommandHandlers
 
 
 class TelegramBot:
-    def __init__(self, token: str, message_service: MessageService):
+    def __init__(self, token: str, message_service: MessageService, conversation_repo=None):
         self.token = token
         self.message_service = message_service
+        self.conversation_repo = conversation_repo
         self.commands = CommandHandlers()
 
         self.app = ApplicationBuilder().token(self.token).build()
@@ -31,13 +32,28 @@ class TelegramBot:
         )
 
     async def responder(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        chat_id = update.effective_chat.id
         texto = update.message.text
 
+        # salvar mensagem do usuário (síncrono)
+        try:
+            if self.conversation_repo:
+                self.conversation_repo.add_message(chat_id, "user", texto)
+        except Exception:
+            # não interrompe o fluxo caso o DB falhe
+            pass
+
         resposta = self.message_service.process_message(texto)
+
+        # salvar resposta do bot (síncrono)
+        try:
+            if self.conversation_repo:
+                self.conversation_repo.add_message(chat_id, "assistant", resposta)
+        except Exception:
+            pass
 
         await update.message.reply_text(resposta)
 
     def run(self):
         print("Bot rodando...")
         self.app.run_polling()
-
