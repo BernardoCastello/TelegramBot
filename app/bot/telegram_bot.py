@@ -9,6 +9,7 @@ from telegram.ext import (
 from app.core.message_service import MessageService
 from app.bot.command_handlers import CommandHandlers
 
+import asyncio
 
 class TelegramBot:
     def __init__(self, token: str, message_service: MessageService, conversation_repo=None):
@@ -40,15 +41,23 @@ class TelegramBot:
             if self.conversation_repo:
                 self.conversation_repo.add_message(chat_id, "user", texto)
         except Exception:
-            # não interrompe o fluxo caso o DB falhe
             pass
 
-        resposta = self.message_service.process_message(texto)
+        resposta = self.message_service.process_message(texto, chat_id=chat_id, conversation_repo=self.conversation_repo)
 
-        # salvar resposta do bot (síncrono)
+        # salvar resposta do bot (síncrono) — apenas UMA vez
         try:
             if self.conversation_repo:
                 self.conversation_repo.add_message(chat_id, "assistant", resposta)
+        except Exception:
+            pass
+
+        # agendar sumarização em background (não bloqueia)
+        try:
+            if self.conversation_repo:
+                asyncio.create_task(
+                    self.message_service.summarize_and_persist(chat_id, self.conversation_repo)
+                )
         except Exception:
             pass
 

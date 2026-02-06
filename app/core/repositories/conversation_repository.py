@@ -17,7 +17,7 @@ class ConversationMemory:
     def needs_summarization(self, chat_id: int) -> bool:
         return len(self.short_memory[chat_id]) >= self.max_messages
 
-    def pop_old_messages(self, chat_id: int, keep_last: int = 2):
+    def pop_old_messages(self, chat_id: int, keep_last: int = 3):
         messages = list(self.short_memory[chat_id])
         to_summarize = messages[:-keep_last]
         self.short_memory[chat_id].clear()
