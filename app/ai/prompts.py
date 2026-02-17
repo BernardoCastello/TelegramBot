@@ -28,7 +28,7 @@ Objetivo do assistente:
 - Servir como portfólio interativo
 """
 
-RESUME_PROMPT = """Resuma essa conversa de forma clara e objetiva.
+RESUME_PROMPT = """Resuma essa conversa de forma clara, objetiva e em tópicos.
 De mais importância para salvar informações do 'user'
 Guarde apaenas informações relevantes a conversa, como por exempo
 nomes, cargos, funções, tópicos comentados, coisas do tipo.

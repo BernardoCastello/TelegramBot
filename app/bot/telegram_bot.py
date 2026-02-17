@@ -52,15 +52,6 @@ class TelegramBot:
         except Exception:
             pass
 
-        # agendar sumarização em background (não bloqueia)
-        try:
-            if self.conversation_repo:
-                asyncio.create_task(
-                    self.message_service.summarize_and_persist(chat_id, self.conversation_repo)
-                )
-        except Exception:
-            pass
-
         await update.message.reply_text(resposta)
 
     def run(self):

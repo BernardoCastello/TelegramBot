@@ -14,9 +14,17 @@ class OpenAIResponder:
                 {"role": "user", "content": user_message}
             ]
         else:
-            # sempre garantir que o system prompt principal esteja na posição 0
-            # (se já existir outros system messages, mantemos eles depois do prompt principal)
-            messages = [{"role": "system", "content": self.system_prompt}] + messages
+            # Remover mensagens duplicadas
+            unique_messages = []
+            seen = set()
+            for msg in messages:
+                msg_content = (msg["role"], msg["content"])
+                if msg_content not in seen:
+                    unique_messages.append(msg)
+                    seen.add(msg_content)
+            messages = [{"role": "system", "content": self.system_prompt}] + unique_messages
+
+        print(messages)
 
         response = self.client.chat.completions.create(
             model="gpt-4o-mini",

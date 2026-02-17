@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import NoResultFound
+from sqlalchemy.sql import text
 from .models import Base, ConversationMessage, ConversationSummary
 from app.infra.environment import DATABASE_URL
 
@@ -122,6 +123,60 @@ class PostgresConversationRepository:
             db.query(ConversationMessage).filter(ConversationMessage.id.in_(ids)).delete(synchronize_session=False)
             db.commit()
             return len(ids)
+        finally:
+            db.close()
+
+    def increment_message_count(self, chat_id: int):
+        db = self.SessionLocal()
+        try:
+            db.execute(
+                text("""
+                    INSERT INTO conversation_summaries (chat_id, message_count)
+                    VALUES (:chat_id, 1)
+                    ON CONFLICT (chat_id)
+                    DO UPDATE
+                    SET message_count = conversation_summaries.message_count + 1
+                """),
+                {"chat_id": chat_id}
+            )
+            db.commit()
+        finally:
+            db.close()
+
+
+    def reset_message_count(self, chat_id: int):
+        db = self.SessionLocal()
+        try:
+            db.execute(
+                text("""
+                    INSERT INTO conversation_summaries (chat_id, message_count)
+                    VALUES (:chat_id, 0)
+                    ON CONFLICT (chat_id)
+                    DO UPDATE
+                    SET message_count = 0
+                """),
+                {"chat_id": chat_id}
+            )
+            db.commit()
+        finally:
+            db.close()
+
+
+    def get_message_count(self, chat_id: int) -> int:
+        """Retorna o contador de mensagens para o chat."""
+        db = self.SessionLocal()
+        try:
+            result = db.execute(
+                text(
+                    """
+                    SELECT message_count
+                    FROM conversation_summaries
+                    WHERE chat_id = :chat_id
+                    """
+                ),
+                {"chat_id": chat_id}
+            ).fetchone()
+            return result[0] if result else 0
         finally:
             db.close()
 
