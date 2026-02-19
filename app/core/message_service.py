@@ -53,8 +53,6 @@ class MessageService:
         await asyncio.to_thread(self._summarize_blocking, chat_id, conversation_repo, threshold, keep_last)
 
     def _summarize_blocking(self, chat_id: int, conversation_repo, threshold: int, keep_last: int):
-        print("-=-=-=-==-="*10)
-        print("AKI FOI FEITO UM RESUMO!!!!!")
         try:
             count = conversation_repo.count_messages(chat_id)
             if count < threshold:

@@ -1,5 +1,7 @@
 from sqlalchemy import Column, Integer, Text, String, TIMESTAMP, func, BigInteger
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.declarative import declarative_base
+from pgvector.sqlalchemy import Vector
 
 Base = declarative_base()
 
@@ -26,3 +28,13 @@ class ConversationSummary(Base):
         server_default=func.now(),
         nullable=False
     )
+
+
+class KnowledgeBase(Base):
+    __tablename__ = "knowledge_base"
+
+    id = Column(Integer, primary_key=True)
+    titulo = Column(Text, nullable=False)
+    palavras_principais = Column(ARRAY(Text))
+    texto = Column(Text, nullable=False)
+    embedding = Column(Vector(1536))

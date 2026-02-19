@@ -19,6 +19,27 @@ class PostgresConversationRepository:
     def create_tables(self):
         Base.metadata.create_all(bind=self.engine)
 
+    def enable_vector_extension(self):
+        try:
+            with self.engine.connect() as conn:
+                conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector;"))
+                conn.commit()
+        except Exception:
+            logger.exception("Erro ao habilitar extensão pgvector")
+
+    def create_vector_index(self):
+        try:
+            with self.engine.connect() as conn:
+                conn.execute(text("""
+                    CREATE INDEX IF NOT EXISTS knowledge_base_embedding_idx
+                    ON knowledge_base
+                    USING ivfflat (embedding vector_cosine_ops)
+                    WITH (lists = 100);
+                """))
+                conn.commit()
+        except Exception:
+            logger.exception("Erro ao criar índice vetorial")
+
     def add_message(self, chat_id: int, role: str, content: str):
         db = self.SessionLocal()
         try:
