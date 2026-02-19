@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: ankane/pgvector:latest
+    container_name: telegram-bot-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: telegram_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - telegram_bot_data:/var/lib/postgresql/data
+
+volumes:
+  telegram_bot_data:
