@@ -4,3 +4,4 @@ dotenv==0.9.9
 SQLAlchemy==2.0.46
 psycopg2-binary==2.9.11
 pgvector==0.4.2
+pymongo==4.4.0

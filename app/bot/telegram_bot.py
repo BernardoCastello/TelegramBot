@@ -12,9 +12,10 @@ from app.bot.command_handlers import CommandHandlers
 import asyncio
 
 class TelegramBot:
-    def __init__(self, token: str, message_service: MessageService, conversation_repo=None):
+    def __init__(self, token: str, message_service: MessageService, message_repo=None, conversation_repo=None):
         self.token = token
         self.message_service = message_service
+        self.message_repo = message_repo
         self.conversation_repo = conversation_repo
         self.commands = CommandHandlers()
 
@@ -36,18 +37,22 @@ class TelegramBot:
         chat_id = update.effective_chat.id
         texto = update.message.text
 
-        # salvar mensagem do usuário (síncrono)
+        # salvar mensagem do usuário no repositório de mensagens (Mongo)
         try:
-            if self.conversation_repo:
+            if self.message_repo:
+                self.message_repo.add_message(chat_id, "user", texto)
+            elif self.conversation_repo:
                 self.conversation_repo.add_message(chat_id, "user", texto)
         except Exception:
             pass
 
-        resposta = self.message_service.process_message(texto, chat_id=chat_id, conversation_repo=self.conversation_repo)
+        resposta = self.message_service.process_message(texto, chat_id=chat_id, message_repo=self.message_repo, conversation_repo=self.conversation_repo)
 
         # salvar resposta do bot (síncrono) — apenas UMA vez
         try:
-            if self.conversation_repo:
+            if self.message_repo:
+                self.message_repo.add_message(chat_id, "assistant", resposta)
+            elif self.conversation_repo:
                 self.conversation_repo.add_message(chat_id, "assistant", resposta)
         except Exception:
             pass

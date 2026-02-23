@@ -2,7 +2,7 @@ from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.sql import text
-from .models import Base, ConversationMessage, ConversationSummary
+from .models import Base, ConversationSummary
 from app.infra.environment import DATABASE_URL
 
 import logging
@@ -40,46 +40,6 @@ class PostgresConversationRepository:
         except Exception:
             logger.exception("Erro ao criar índice vetorial")
 
-    def add_message(self, chat_id: int, role: str, content: str):
-        db = self.SessionLocal()
-        try:
-            msg = ConversationMessage(chat_id=chat_id, role=role, content=content)
-            db.add(msg)
-            db.commit()
-            db.refresh(msg)
-            return msg
-        except Exception as e:
-            logger.exception("Erro ao salvar mensagem no banco")
-        finally:
-            db.close()
-
-    def get_messages(self, chat_id: int, limit: int = 50):
-        db = self.SessionLocal()
-        try:
-            return (
-                db.query(ConversationMessage)
-                .filter(ConversationMessage.chat_id == chat_id)
-                .order_by(ConversationMessage.created_at.desc())
-                .limit(limit)
-                .all()
-            )
-        finally:
-            db.close()
-    
-    def get_last_messages(self, chat_id: int, limit: int = 3):
-        db = self.SessionLocal()
-        try:
-            rows = (
-                db.query(ConversationMessage)
-                .filter(ConversationMessage.chat_id == chat_id)
-                .order_by(ConversationMessage.created_at.desc())
-                .limit(limit)
-                .all()
-            )
-            # retornar em ordem cronológica (antigo -> novo)
-            return [{"role": r.role, "content": r.content} for r in reversed(rows)]
-        finally:
-            db.close()
 
     def get_summary(self, chat_id: int) -> str:
         db = self.SessionLocal()
@@ -107,45 +67,6 @@ class PostgresConversationRepository:
         finally:
             db.close()
 
-    def count_messages(self, chat_id: int) -> int:
-        db = self.SessionLocal()
-        try:
-            return db.query(func.count(ConversationMessage.id)).filter(ConversationMessage.chat_id == chat_id).scalar() or 0
-        finally:
-            db.close()
-
-    def get_messages_to_summarize(self, chat_id: int, keep_last: int = 2):
-        db = self.SessionLocal()
-        try:
-            rows = (
-                db.query(ConversationMessage)
-                .filter(ConversationMessage.chat_id == chat_id)
-                .order_by(ConversationMessage.created_at.asc())
-                .all()
-            )
-            to_summarize = rows[:-keep_last] if len(rows) > keep_last else []
-            return [{"role": r.role, "content": r.content} for r in to_summarize]
-        finally:
-            db.close()
-
-    def delete_messages(self, chat_id: int, keep_last: int = 2):
-        db = self.SessionLocal()
-        try:
-            rows = (
-                db.query(ConversationMessage)
-                .filter(ConversationMessage.chat_id == chat_id)
-                .order_by(ConversationMessage.created_at.asc())
-                .all()
-            )
-            if len(rows) <= keep_last:
-                return 0
-            to_delete = rows[:-keep_last]
-            ids = [r.id for r in to_delete]
-            db.query(ConversationMessage).filter(ConversationMessage.id.in_(ids)).delete(synchronize_session=False)
-            db.commit()
-            return len(ids)
-        finally:
-            db.close()
 
     def increment_message_count(self, chat_id: int):
         db = self.SessionLocal()

@@ -22,3 +22,9 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not DATABASE_URL :
     raise RuntimeError("DATABASE_URL  não encontrada no .env")
+
+
+# MongoDB
+MONGODB_URI = os.getenv("MONGODB_URI")
+if not MONGODB_URI :
+    raise RecursionError("MongoDB_URL  não encontrada no .env")

@@ -13,5 +13,19 @@ services:
     volumes:
       - telegram_bot_data:/var/lib/postgresql/data
 
+  mongo:
+    image: mongo:7
+    container_name: telegram-bot-mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongo
+      MONGO_INITDB_ROOT_PASSWORD: mongo123
+      MONGO_INITDB_DATABASE: telegram_db
+    ports:
+      - "27017:27017"
+    volumes:
+      - telegram_mongo_data:/data/db
+
 volumes:
   telegram_bot_data:
+  telegram_mongo_data:
