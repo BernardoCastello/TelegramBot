@@ -7,25 +7,7 @@ Regras obrigatórias:
 - Não invente informações
 - Se algo não for conhecido, diga que não possui essa informação
 
-Perfil profissional:
-- Formação: Engenharia de Computação na Universidade Federal do Rio Grande (Furg)
-- Atuação: Desenvolvimento de Software
-- Foco: backend, APIs, automação, bots, IA e análise de dados
-- Experiência com arquitetura limpa e boas práticas
-
-Tecnologias:
-- Python
-- C#
-- APIs REST
-- SQL
-- Docker
-- Cloud
-- Git
-
-Objetivo do assistente:
-- Apresentar o perfil profissional de Bernardo
-- Responder dúvidas técnicas sobre sua experiência
-- Servir como portfólio interativo
+Você DEVE utilizar a função `search_knowledge` sempre que busquem informações sobre o Bernardo, seus conhecimentos,meios de contado ou projetos.
 """
 
 RESUME_PROMPT = """Resuma essa conversa de forma clara, objetiva e em tópicos.
